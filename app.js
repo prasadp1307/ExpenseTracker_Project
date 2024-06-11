@@ -18,6 +18,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'signUp.html'));
 });
 
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'login.html'));
+});
+
 app.post('/', async (req, res) => {
     const { name, email, password } = req.body;
     try {
@@ -26,6 +30,21 @@ app.post('/', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('Error submitting form');
+    }
+});
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const user = await Users.findOne({ where: { email } });
+        if (user && user.password === password) {
+            res.send('Login Successful');
+        } else {
+            res.status(401).send('Invalid email or password');
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Error during login');
     }
 });
 
