@@ -40,14 +40,14 @@ h1 {
 
 label {
     display: block;
-    margin-bottom: 5px; /* Adjusted for better spacing */
+    margin-bottom: 5px; 
     color: #666666;
 }
 
 input {
-    width: 100%; /* Changed to 100% for full-width */
+    width: 100%; 
     padding: 10px;
-    margin-bottom: 10px; /* Added margin for spacing */
+    margin-bottom: 10px; 
     border: 1px solid #cccccc;
     border-radius: 100px;
     box-sizing: border-box;
