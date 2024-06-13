@@ -1,4 +1,4 @@
-const Users = require('../util/user');
+const Users = require('../util/user'); 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -52,25 +52,38 @@ const loginUser = async (req, res) => {
         if (user) {
             bcrypt.compare(password, user.password, (err, result) => {
                 if (err) {
+                    console.error('Error comparing passwords:', err);
                     res.status(500).json({ success: false, message: "Something went wrong" });
                 } else if (result) {
                     res.status(201).json({
                         success: true,
                         message: "Successfully logged in",
-                        token: generateToken(user.id, user.name, user.ispremiumuser)
+                        // token: generateToken(user.id, user.name, user.isPremiumUser)
                     });
                 } else {
+                    console.warn('Password mismatch');
                     res.status(401).json({ success: false, message: "Password is incorrect" });
                 }
             });
         } else {
+            console.warn('User not found');
             res.status(404).json({ success: false, message: "User not found" });
         }
     } catch (err) {
-        console.error(err);
+        console.error('Error during login:', err);
         res.status(500).json({ message: err, success: false });
     }
 };
+
+function InvalidString(str) {
+    return !str || str.trim().length === 0;
+}
+
+function generateToken(userId, userName, isPremiumUser) {
+    return jwt.sign({ userId, userName, isPremiumUser }, process.env.JWT_SECRET, {
+        expiresIn: '1h'
+    });
+}
 
 function InvalidString(str) {
     return !str || str.trim().length === 0;
@@ -85,5 +98,6 @@ function generateToken(userId, userName, isPremiumUser) {
 
 module.exports = {
     signupUser,
-    loginUser
+    loginUser,
+    generateToken
 };

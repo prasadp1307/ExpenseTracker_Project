@@ -1,24 +1,38 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const env = require('dotenv').config();
 const path = require('path');
 const cors = require('cors');
-const app = express();
 
+// Routes Require
 const sequelize = require('./database/db');
-const userRoutes = require('./routes/userRoutes')
+const userRoutes = require('./routes/userRoutes');
+const expenseRoutes = require('./routes/expenseRoutes');
+
+// DataBase Tables
+const User = require('./util/user');
+const Expense = require('./models/expense');
+
+// Using Package to read Request
+const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Routes
+app.use('/user',userRoutes);
+
+app.use('/',expenseRoutes)
+
+
 app.use(express.static(path.join(__dirname, 'views')));
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views','signUp.html'));
+    res.sendFile(path.join(__dirname, 'views','login.html'));
 });
 
-app.use('/',userRoutes);
-
+// Server & Database Start
 sequelize.sync()
     .then(() => {
         app.listen(4000, () => {
@@ -29,3 +43,5 @@ sequelize.sync()
         console.error('Error syncing with the database', err);
     });
 
+
+    

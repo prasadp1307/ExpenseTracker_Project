@@ -113,7 +113,8 @@ nav
     background-color: #333333;
     overflow: hidden;
     padding: 10px 0;
-    position: absolute;
+    position: fixed;
+    align-self: normal;
 }
 
 nav ul {

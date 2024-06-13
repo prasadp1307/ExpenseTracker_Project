@@ -107,3 +107,38 @@ button[type="button"]:hover {
     margin-right: 10px;
 }
 
+
+nav 
+{
+    width: 100%;
+    background-color: #333333;
+    overflow: hidden;
+    padding: 10px 0;
+    position: fixed;
+    align-self: normal;
+}
+
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content:left ;
+}
+
+nav ul li {
+    display: inline;
+}
+
+nav ul li a {
+    color: #ffffff;
+    text-align: center;
+    font-family: cursive;
+    padding: 14px 16px;
+    text-decoration:overline;
+    font-size: 24px;
+}
+
+nav ul li a:hover {
+    text-decoration:underline;
+}
