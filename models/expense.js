@@ -15,7 +15,7 @@ const Expense = sequelize.define('expense',
             type: Sequelize.INTEGER,
             allowNull:false
         },
-        descr:{
+        description:{
             type: Sequelize.STRING,
             allowNull:false
         },

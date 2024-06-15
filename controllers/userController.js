@@ -3,6 +3,12 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
+
+
+const generateToken=(id, name)=>{
+    return jwt.sign({userId:id, name: name },process.env.JSW_WEB_TOKEN_SECRETKEY);
+}
+
 // Controller for user Registration
 const signupUser = async (req, res) => {
     try {
@@ -32,68 +38,49 @@ const signupUser = async (req, res) => {
             });
         }
     } catch (error) {
-        console.log(error);
+        console.error(`Error: ${error.message}`, error);
         res.status(500).send('Error submitting');
     }
 };
 
 // Controller for handling user login
-const loginUser = async (req, res) => {
-    try {
-        const email = req.body.email.trim();
-        const password = req.body.password; 
-        console.log(`Login with: ${email} ${password}`);
-
-        if (InvalidString(email) || InvalidString(password)) {
-            return res.status(400).json({ success: false, message: 'All fields are mandatory' });
+const loginUser = async(req,res,next)=>{
+    try{
+        const email= req.body.email.trim();
+        const password = req.body.password;
+        console.log(`with: ${email} ${password}`)
+        if(Invalidstring(email) || Invalidstring(papassword)){
+            return res.status(400).json({success:false,message:'All the fields are mandatory'})
         }
-
-        const user = await Users.findOne({ where: { email: email } });
-        if (user) {
-            bcrypt.compare(password, user.password, (err, result) => {
-                if (err) {
-                    console.error('Error comparing passwords:', err);
-                    res.status(500).json({ success: false, message: "Something went wrong" });
-                } else if (result) {
-                    res.status(201).json({
-                        success: true,
-                        message: "Successfully logged in",
-                        // token: generateToken(user.id, user.name, user.isPremiumUser)
-                    });
-                } else {
-                    console.warn('Password mismatch');
-                    res.status(401).json({ success: false, message: "Password is incorrect" });
-                }
-            });
-        } else {
-            console.warn('User not found');
-            res.status(404).json({ success: false, message: "User not found" });
+        const user =await Users.findAll({where:{email:email}});
+        if(user.length>0){
+          bcrypt.compare(password,user[0].password,(err,result)=>{
+            if(err){
+              res.status(500).json({success:false,message:"Something Went Wrong"});
+            }
+            if(result==true){
+              res.status(201).json({success:true,message:"Successfully loggedIn", token:generateToken(user[0].id, user[0].name)})
+            }else{
+              res.status(401).json({success:false,message:"Password is incorrect"})
+            }
+          });
         }
-    } catch (err) {
-        console.error('Error during login:', err);
-        res.status(500).json({ message: err, success: false });
+        else{
+            res.status(404).json({success:false,message:"User not found"})
+        }
+        
+    }catch(err){
+        res.status(500).json({message:err,success:false})
+        console.log(`Error: ${JSON.stringify(err)}`);
     }
-};
-
-function InvalidString(str) {
-    return !str || str.trim().length === 0;
 }
 
-function generateToken(userId, userName, isPremiumUser) {
-    return jwt.sign({ userId, userName, isPremiumUser }, process.env.JWT_SECRET, {
-        expiresIn: '1h'
-    });
-}
-
-function InvalidString(str) {
-    return !str || str.trim().length === 0;
-}
-
-// Token generation using JWT
-function generateToken(userId, userName, isPremiumUser) {
-    return jwt.sign({ userId, userName, isPremiumUser }, process.env.JWT_SECRET, {
-        expiresIn: '1h'
-    });
+function InvalidString(str){
+    if(str.trim().length==0 || str == undefined){
+        return true;
+    }else{
+        return false;
+    }
 }
 
 module.exports = {
