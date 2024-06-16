@@ -5,9 +5,9 @@ const expenseController = require('../controllers/expenseController');
 
 const router = express.Router();
 
-router.get('/get-expenses',userAuthentecation.authenticate,expenseController.getExpenses);
+router.get('/get-expense',userAuthentecation.authenticate,expenseController.getExpenses);
 router.post('/add-expense',userAuthentecation.authenticate,expenseController.addExpense);
-router.delete('/delete-expense/:id',userAuthentecation.authenticate,expenseController.deleteExpense);
+router.delete('/:id',userAuthentecation.authenticate,expenseController.deleteExpense);
 
 
 module.exports = router;

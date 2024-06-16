@@ -4,10 +4,15 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 
+function InvalidString(str){
+    return str.length===0 || str === undefined;
+}
 
 const generateToken=(id, name)=>{
-    return jwt.sign({userId:id, name: name },process.env.JSW_WEB_TOKEN_SECRETKEY);
+    return jwt.sign({userId:id, name: name },process.env.JSW_TOKEN_SECRETKEY);
 }
+
+
 
 // Controller for user Registration
 const signupUser = async (req, res) => {
@@ -46,10 +51,10 @@ const signupUser = async (req, res) => {
 // Controller for handling user login
 const loginUser = async(req,res,next)=>{
     try{
-        const email= req.body.email.trim();
+        const email= req.body.email;
         const password = req.body.password;
         console.log(`with: ${email} ${password}`)
-        if(Invalidstring(email) || Invalidstring(papassword)){
+        if(InvalidString(email) || InvalidString(password)){
             return res.status(400).json({success:false,message:'All the fields are mandatory'})
         }
         const user =await Users.findAll({where:{email:email}});
@@ -71,20 +76,15 @@ const loginUser = async(req,res,next)=>{
         
     }catch(err){
         res.status(500).json({message:err,success:false})
-        console.log(`Error: ${JSON.stringify(err)}`);
+        console.log(err);
     }
 }
 
-function InvalidString(str){
-    if(str.trim().length==0 || str == undefined){
-        return true;
-    }else{
-        return false;
-    }
-}
+
 
 module.exports = {
     signupUser,
     loginUser,
     generateToken
 };
+

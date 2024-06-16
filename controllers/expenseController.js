@@ -3,112 +3,85 @@ const User = require('../util/user');
 const sequelize = require('../database/db');
 
 
-function Invalidstring(str){
-    if(str.trim().length==0 || str == undefined){
-        return true;
-    }else{
-        return false;
-    }
+function InvalidString(str){
+    return str.length===0 || str === undefined;
 }
 
-exports.getExpenses=async (req, res, next)=>{
-    try{
-        const page = +req.query.page||1;
-        const pageSize = +req.query.pageSize||3;
 
-        const totalExpenses=await req.user.countExpenses();
-
-        const data = await req.user.getExpenses({
-            offset:(page-1)*pageSize,
-            limit: pageSize,
-            order:[['id','DESC']]
-           })
-
-        res.status(200).json({
-            allExpenses: data,
-            currentPage: page,
-            hasNextPage: pageSize * page < totalExpenses,
-            nextPage: page + 1,
-            hasPreviousPage: page > 1,
-            previousPage: page - 1,
-            lastPage: Math.ceil(totalExpenses / pageSize)
-         })
-    }catch(err){
-        console.log(JSON.stringify(err));
-        res.status(500).json({success:true,message:err})
+exports.getExpenses = async (req, res, next) => {
+    try {
+        console.log("Fetching expenses for user ID:", req.user.id);
+        const expenses = await Expense.findAll({ where: { userId: req.user.id } });
+        console.log("Expenses found:", expenses);
+        res.status(200).json(expenses);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ success: false, message: err.message });
     }
 };
 
 
-exports.deleteExpense = async(req,res,next)=>{
-    const t = await sequelize.transaction(); 
-    try{
-        if(req.params.id=="undefined"){ 
-            return res.status(400).json({message : "ID is missing"});
+exports.addExpense = async (req, res, next) => {
+    const t = await sequelize.transaction();
+    try {
+        let { expenseamount, description, category } = req.body;
+        expenseamount = String(expenseamount).trim();
+        description = description.trim();
+        category = category.trim();
+
+        if (InvalidString(expenseamount) || InvalidString(description) || InvalidString(category)) {
+            return res.status(400).json({ message: 'All fields are mandatory' });
         }
-
-        const uId  = req.params.id;
-        const expenseamount = await Expense.findAll({where:{id:uId}});
-
-        const totalExpense = Number(req.user.totalExpense) - Number(expenseamount[0].expenseamount);
-
-        await User.update({
-            totalExpense: totalExpense
-        },{
-            where:{id: req.user.id},
-            transaction : t
-        })
-
-        const noOfRowsDeleted = await Expense.destroy({
-            where: {id:uId, userId:req.user.id},
-            transaction : t
-        });
-        await t.commit();
-        if(noOfRowsDeleted==0){
-            res.status(500).json({success:false,message:"You can not delete this expense"});
-        }else{
-            res.status(200).json({success:true,message:"Deleted"});
-        }
-    }catch(err){
-        await t.rollback();
-        console.log(err)
-        res.status(500).json({success:true,message:err});
-    }
-}
-
-exports.addExpense =async (req, res, next)=>{
-    const t = await sequelize.transaction(); 
-    try{
-        const expenseamount = req.body.expenseamount.trim();
-        const description= req.body.description.trim();
-        const category = req.body.category.trim();
-        console.log(`entry :${expenseamount} ${description} ${category}`)
-        if(Invalidstring(expenseamount) || Invalidstring(description) || Invalidstring(category)){
-            return res.status(400).json({message:'All the fields are mandatory'})
-        }
-        console.log("add Exp",expenseamount, description , category)
-        const data = await Expense.create({
-            expenseamount: expenseamount,
-            description: description,    
-            category: category,
+        console.log("Add Exp",expenseamount,description,category)
+        const expense = await Expense.create({
+            expenseamount,
+            description,
+            category,
             userId: req.user.id
-        },{transaction : t})
-        
-        //totalExpense
-        const totalExpense = Number(req.user.totalExpense)+ Number(expenseamount);
-        console.log('expenseamount:',totalExpense);
-        await User.update({
-            totalExpense: totalExpense
-        },{
-            where:{id: req.user.id},
-            transaction : t
-        })
+        }, { transaction: t });
+
+        // Update total expense for the user
+        req.user.totalExpense += Number(expenseamount);
+        await req.user.save({ transaction: t });
+
         await t.commit();
-        res.status(201).json({newExpense: data});
-    }
-    catch(err){
+        res.status(201).json({ newExpense: expense });
+    } catch (err) {
         await t.rollback();
-        console.log(err)
-        res.status(500).json({message:err})
+        console.log(err);
+        res.status(500).json({ message: err.message });
     }
 };
+
+
+
+// Delete an expense
+exports.deleteExpense = async (req, res, next) => {
+    const t = await sequelize.transaction();
+    try {
+        const expenseId = req.params.id;
+
+        if (!expenseId) {
+            return res.status(400).json({ message: 'ID is missing' });
+        }
+
+        const expense = await Expense.findByPk(expenseId);
+
+        if (!expense || expense.userId !== req.user.id) {
+            return res.status(404).json({ message: 'Expense not found' });
+        }
+
+        const totalExpense = Number(req.user.totalExpense) - Number(expense.expenseamount);
+        await User.update({ totalExpense }, { where: { id: req.user.id }, transaction: t });
+
+        await expense.destroy({ transaction: t });
+        await t.commit();
+
+        res.status(200).json({ success: true, message: 'Expense deleted' });
+    } catch (err) {
+        await t.rollback();
+        console.log(err);
+        res.status(500).json({ message: err.message });
+    }
+};
+

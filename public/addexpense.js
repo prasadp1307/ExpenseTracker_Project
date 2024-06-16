@@ -2,11 +2,10 @@ const addExpenseForm = document.querySelector('.addExpenseForm');
 const expenseamount = document.querySelector('#expenseamount');
 const description = document.querySelector('#description');
 const category = document.querySelector('#category');
-const addExpenseBtn = document.querySelector('#addExpenseBtn');
-
 const expenseList = document.querySelector('.expenseList');
-
 const token = localStorage.getItem('token');
+
+console.log('Token:', token); 
 
 const addToExpenseList = (expense) => {
     const newLi = document.createElement('li');
@@ -16,36 +15,24 @@ const addToExpenseList = (expense) => {
 
 // Show Present Expenses (with pagination)
 document.addEventListener('DOMContentLoaded', showExpenses);
-async function showExpenses(e) {
+async function showExpenses() {
     try {
-        // JWT Decode function
-        function parseJwt(token) {
-            var base64Url = token.split('.')[1];
-            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-        
-            return JSON.parse(jsonPayload);
-        };
-
-        const userDetails = parseJwt(localStorage.getItem('token'));
-
-        if(userDetails.isPremium === true) {
-            document.querySelector('.buyPremium').remove();
-            document.querySelector('.premium').innerHTML = '<p>You are Premium User</p>';
+        const getExpenses = await axios.get('http://localhost:4000/expenses/get-expense', {
+            headers: { "Authorization": token }
+        });
+        console.log("Expenses retrieved:", getExpenses.data);
+        if (getExpenses.data.length > 0) {
+            getExpenses.data.forEach(expense => {
+                addToExpenseList(expense);
+            });
+        } else {
+            console.log('No expenses found');
         }
-        
-        // pagination and expenselist showing
-        /*const getExpenses = await axios.get('http://localhost:4000/expenses/addExpense', { headers: { "Authorization": token } });
-        getExpenses.data.forEach(expense => {
-            addToExpenseList(expense);
-        });*/
-    }
-    catch (err) {
+    } catch (err) {
         console.log(err);
     }
 }
+
 
 // Insert in DB
 addExpenseForm.addEventListener('submit', postExpenses);
@@ -57,10 +44,10 @@ async function postExpenses(e) {
             description: description.value,
             category: category.value
         };
-        const postedExpense = await axios.post('http://localhost:4000/expenses/addExpense', expense, { headers: { "Authorization": token } });
-        addToExpenseList(postedExpense.data);
-    }
-    catch (err) {
+     
+        const postedExpense = await axios.post('http://localhost:4000/expenses/add-expense', expense, { headers: { "Authorization": token } });
+        addToExpenseList(postedExpense.data.newExpense);
+    } catch (err) {
         console.log(err);
     }
 }
@@ -69,15 +56,13 @@ async function postExpenses(e) {
 document.addEventListener('click', deleteExpense);
 async function deleteExpense(e) {
     try {
-        if (e.target.classList.contains('deleteExpense')) {
+         if (e.target.classList.contains('deleteExpense')) {
             const expenseId = e.target.id;
-            console.log(expenseId);
-            const deletRequest = await axios.delete(`http://localhost:4000/expenses/addExpense/${expenseId}`, { headers: { "Authorization": token } });
-            console.log(deletRequest.data);
+            await axios.delete(`http://localhost:4000/expenses/${expenseId}`, { headers: { "Authorization": token } });
             e.target.parentElement.remove();
-        }
-    }
-    catch (err) {
+        }    
+    
+    } catch (err) {
         console.log(err);
     }
 }

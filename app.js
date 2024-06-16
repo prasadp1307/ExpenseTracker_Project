@@ -4,6 +4,9 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv').config();
 const path = require('path');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+
+
 
 // Routes Require
 const sequelize = require('./database/db');
@@ -27,6 +30,7 @@ const axios = require('axios');
 app.use('/user', userRoutes);
 app.use('/expenses', expenseRoutes);
 
+
 app.use(express.static(path.join(__dirname, 'views')));
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
@@ -38,6 +42,7 @@ app.get('/',  (req, res) => {
 app.use((err, req, res, next) => {
     console.error('Error:', err);
     res.status(500).send({ message: 'Internal Server Error' });
+    next();
 });
 
 // Associations

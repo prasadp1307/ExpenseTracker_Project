@@ -39,6 +39,7 @@
                 };
                 console.log(loginDetails);
                 let op = await axios.post("http://localhost:4000/user/login", loginDetails);
+                console.log(op.data)
                 localStorage.setItem('token', op.data.token);
                 if(op.status == 201){
                     alert('Login Successfully');
