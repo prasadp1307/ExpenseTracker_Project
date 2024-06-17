@@ -6,17 +6,18 @@ const path = require('path');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 
-
-
 // Routes Require
 const sequelize = require('./database/db');
 
 const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
+const purchaseRoutes = require('./routes/purchaseRoues')
+
 
 // DataBase Tables
 const User = require('./util/user');
 const Expense = require('./models/expense');
+const Orders = require('./models/orders');
 
 // Using Package to read Request
 const app = express();
@@ -29,6 +30,7 @@ const axios = require('axios');
 // Routes
 app.use('/user', userRoutes);
 app.use('/expenses', expenseRoutes);
+app.use('/purchase',purchaseRoutes)
 
 
 app.use(express.static(path.join(__dirname, 'views')));
@@ -48,6 +50,9 @@ app.use((err, req, res, next) => {
 // Associations
 User.hasMany(Expense);
 Expense.belongsTo(User);
+
+User.hasMany(Orders);
+Orders.belongsTo(User);
 
 // Server & Database Start
 sequelize.sync()

@@ -1,3 +1,5 @@
+// const { get } = require("../routes/userRoutes"); 
+
 const addExpenseForm = document.querySelector('.addExpenseForm');
 const expenseamount = document.querySelector('#expenseamount');
 const description = document.querySelector('#description');
@@ -66,3 +68,4 @@ async function deleteExpense(e) {
         console.log(err);
     }
 }
+
