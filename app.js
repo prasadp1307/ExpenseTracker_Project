@@ -11,7 +11,8 @@ const sequelize = require('./database/db');
 
 const userRoutes = require('./routes/userRoutes');
 const expenseRoutes = require('./routes/expenseRoutes');
-const purchaseRoutes = require('./routes/purchaseRoues')
+const purchaseRoutes = require('./routes/purchaseRoues');
+const leaderboardRoutes = require('./routes/leaderboardRoutes');
 
 
 // DataBase Tables
@@ -30,7 +31,8 @@ const axios = require('axios');
 // Routes
 app.use('/user', userRoutes);
 app.use('/expenses', expenseRoutes);
-app.use('/purchase',purchaseRoutes)
+app.use('/purchase',purchaseRoutes);
+app.use('/premiumFeatures',leaderboardRoutes);
 
 
 app.use(express.static(path.join(__dirname, 'views')));

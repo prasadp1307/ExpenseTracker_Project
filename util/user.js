@@ -20,6 +20,10 @@ const Users = sequelize.define('Users', {
     password: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    totalExpense: {
+        type: Sequelize.INTEGER,
+        allowNull: false
     }
 }, {
     tableName: 'userdata',
