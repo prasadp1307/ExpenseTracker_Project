@@ -24,9 +24,14 @@ const Users = sequelize.define('Users', {
     totalExpense: {
         type: Sequelize.INTEGER,
         allowNull: false
+    },
+    totalExpense: {
+        type: DataTypes.DECIMAL,
+        allowNull: false,
+        defaultValue: 0.0, 
     }
 }, {
-    tableName: 'userdata',
+    tableName: 'users',
     timestamps: false
 });
 

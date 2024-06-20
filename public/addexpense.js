@@ -15,7 +15,41 @@ const addToExpenseList = (expense) => {
     expenseList.appendChild(newLi);
 }
 
+
 // Show Present Expenses (with pagination)
+document.addEventListener('DOMContentLoaded', showExpenses);
+async function showExpenses(e) {
+    try {
+        // JWT Decode function
+        function parseJwt(token) {
+            var base64Url = token.split('.')[1];
+            var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+        
+            return JSON.parse(jsonPayload);
+        };
+
+        const userDetails = parseJwt(localStorage.getItem('token'));
+
+        if(userDetails.isPremium === true) {
+            document.querySelector('.buyPremium').remove();
+            document.querySelector('.premium').innerHTML = '<p>You are Premium User</p>';
+        }
+        
+        // pagination and expenselist showing
+        /*const getExpenses = await axios.get('http://localhost:4000/expenses/addExpense', { headers: { "Authorization": token } });
+        getExpenses.data.forEach(expense => {
+            addToExpenseList(expense);
+        });*/
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
+
+// Show Present Expenses
 document.addEventListener('DOMContentLoaded', showExpenses);
 async function showExpenses() {
     try {
@@ -55,17 +89,89 @@ async function postExpenses(e) {
 }
 
 // Delete Expense
+// document.addEventListener('click', deleteExpense);
+// async function deleteExpense(e) {
+//     try {
+//          if (e.target.classList.contains('deleteExpense')) {
+//             const expenseId = e.target.id;
+//             await axios.delete(`http://localhost:4000/expenses/${expenseId}`, { headers: { "Authorization": token } });
+//             e.target.parentElement.remove();
+//         }    
+    
+//     } catch (err) {
+//         console.log(err);
+//     }
+// }
+
+// document.addEventListener('click', async (e) => {
+//     try {
+//         if (e.target.classList.contains('deleteExpense')) {
+//             const expenseId = e.target.id;
+//             const token = localStorage.getItem('token');
+            
+//             if (!token) {
+//                 console.log('No token found');
+//                 return;
+//             }
+
+//             const response = await axios.delete(`http://localhost:4000/expenses/delete-expense/${expenseId}`, {
+//                 headers: { "Authorization": token }
+//             });
+
+//             if (response.status === 200) {
+//                 e.target.parentElement.remove();
+//                 console.log('Expense deleted');
+//             } else {
+//                 console.log('Failed to delete expense');
+//             }
+//         }
+//     } catch (err) {
+//         console.log(err);
+//     }
+// });
+
+
+// document.addEventListener('click', async (e) => {
+//     try {
+//         if (e.target.classList.contains('deleteExpense')) {
+//             const expenseId = e.target.id;
+//             const token = localStorage.getItem('token');
+
+//             if (!token) {
+//                 console.log('No token found');
+//                 return;
+//             }
+
+//             const response = await axios.delete(`http://localhost:4000/expenses/delete-expense/${expenseId}`, {
+//                 headers: { "Authorization": token }
+//             });
+
+//             if (response.status === 200) {
+//                 e.target.parentElement.remove();
+//                 console.log('Expense deleted');
+//             } else {
+//                 console.log('Failed to delete expense');
+//             }
+//         }
+//     } catch (err) {
+//         console.log(err);
+//     }
+// });
+
+
+// Delete Expense
 document.addEventListener('click', deleteExpense);
 async function deleteExpense(e) {
     try {
-         if (e.target.classList.contains('deleteExpense')) {
+        if (e.target.classList.contains('deleteExpense')) {
             const expenseId = e.target.id;
-            await axios.delete(`http://localhost:4000/expenses/${expenseId}`, { headers: { "Authorization": token } });
+            console.log("Attempting to delete expense ID:", expenseId);
+            const deleteRequest = await axios.delete(`http://localhost:4000/expenses/delete-expense/${expenseId}`, { headers: { "Authorization": token } });
+            console.log("Delete Request Response:", deleteRequest.data);
             e.target.parentElement.remove();
-        }    
-    
-    } catch (err) {
-        console.log(err);
+        }
+    }
+    catch (err) {
+        console.log("Error:", err.response ? err.response.data : err.message);
     }
 }
-

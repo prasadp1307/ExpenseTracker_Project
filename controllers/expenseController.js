@@ -55,33 +55,22 @@ exports.addExpense = async (req, res, next) => {
 
 
 
-// Delete an expense
 exports.deleteExpense = async (req, res, next) => {
     const t = await sequelize.transaction();
     try {
         const expenseId = req.params.id;
+        // const neweexpense = await Expenses.findByPk(expenseId, { transaction: t });
+        const expense = await req.user.removeExpense(expenseId, { transaction: t });
 
-        if (!expenseId) {
-            return res.status(400).json({ message: 'ID is missing' });
-        }
+        req.user.totalExpense -= expense.expenseamount;
+        await req.user.save({ transaction: t });
 
-        const expense = await Expense.findByPk(expenseId);
-
-        if (!expense || expense.userId !== req.user.id) {
-            return res.status(404).json({ message: 'Expense not found' });
-        }
-
-        const totalExpense = Number(req.user.totalExpense) - Number(expense.expenseamount);
-        await User.update({ totalExpense }, { where: { id: req.user.id }, transaction: t });
-
-        await expense.destroy({ transaction: t });
         await t.commit();
-
-        res.status(200).json({ success: true, message: 'Expense deleted' });
-    } catch (err) {
+        res.json('SUCCESS');
+    }
+    catch (err) {
         await t.rollback();
         console.log(err);
-        res.status(500).json({ message: err.message });
     }
 };
 

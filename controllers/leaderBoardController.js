@@ -3,7 +3,7 @@ const Users = require('../util/user');
 exports.leaderboard = async (req, res, next) => {
     try {
         const leaders = await Users.findAll({
-            attributes: ['name', 'totalExpense'],
+            attributes: ['id','name', 'totalExpense'],
             order: [['totalExpense', 'DESC']]
         });
 

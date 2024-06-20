@@ -1,43 +1,20 @@
-// const leaderBoard = document.querySelector('.userList');
-// const leaderBtn = document.querySelector('.leaderBtn');
-
-// const leaderBoardList = (user) => {
-//     const newLi = document.createElement('li');
-//     newLi.classList = 'leaders';
-//     newLi.innerHTML = `${user.name} - Rs. ${user.totalExpense}`;
-//     document.querySelector('.userList').appendChild(newLi);
-// }
-
-// leaderBtn.onclick = async (e) => {
-//     try {
-//         const token = localStorage.getItem('token');
-//         const users = await axios.get(`http://localhost:4000/premiumFeatures/leaderboard`, {
-//             headers: { Authorization: token }
-//         });
-//         if(document.querySelector('.userList h2') && document.querySelector('.leaders')) {
-//             document.querySelector('.userList h2').remove();
-//             document.querySelector('.leaders').remove();
-//         }
-//         document.querySelector('.userList').innerHTML = `<h2>Leader Board:</h2>`;
-//         users.data.forEach(user => {
-//             leaderBoardList(user);
-//         });
-//     }
-//     catch (err) {
-//         console.log(err);
-//     }
-// }
-
-
 document.addEventListener('DOMContentLoaded', async () => {
     const token = localStorage.getItem('token');
     const leaderboardBody = document.getElementById('leaderboard-body');
+
+    if (!leaderboardBody) {
+        console.error('Leaderboard body element not found.');
+        return;
+    }
+
+    
 
     const appendLeaderboardEntry = (rank, user) => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${rank}</td>
             <td>${user.name}</td>
+            <td>${user.id}</td>
             <td>Rs. ${user.totalExpense}</td>
         `;
         leaderboardBody.appendChild(row);
@@ -45,14 +22,53 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         const response = await axios.get('http://localhost:4000/premiumFeatures/leaderboard', {
-            headers: { Authorization: token }
+            headers: { Authorization: `Bearer ${token}` }
         });
 
         const users = response.data;
         users.forEach((user, index) => {
             appendLeaderboardEntry(index + 1, user);
         });
+
+        // Check if the user is a premium user
+        const premiumResponse = await axios.get('http://localhost:4000/user/checkPremium', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (premiumResponse.data.isPremium) {
+            document.querySelector('.premium').innerHTML = '<p>&#x1F451; You are Premium User &#x1F451;</p>';
+            const buyPremiumButton = document.getElementById('rzpbtn1');
+            if (buyPremiumButton) {
+                buyPremiumButton.style.display = 'none';
+                
+            }
+        }
     } catch (error) {
         console.error('Error fetching leaderboard data:', error);
+        if (error.response && error.response.status === 401) {
+            console.error('Unauthorized request. Please check your token.');
+        }
+        // leaderboardButton.disabled = false;
+        // leaderboardButton.onclick = function() {
+        // window.location.href = 'leaderbrd.html';
+        };
     }
 });
+
+// document.querySelector('.leaderBoard').addEventListener('click', async (e) => {
+//     try {
+//         e.preventDefault();
+//         const token = localStorage.getItem('token');
+//         await axios.get('http://localhost:4000/premiumFeatures/leaderboard', {
+//             headers: { Authorization: `Bearer ${token}` }
+//         });
+
+//         // Redirect to leaderbrd.html
+//         window.location.href = 'leaderbrd.html';
+//     } catch (err) {
+//         console.log('Error redirecting to leaderbrd.html:', err);
+//         if (err.response && err.response.status === 401) {
+//             console.error('Unauthorized request. Please check your token.');
+//         }
+//     }
+// });

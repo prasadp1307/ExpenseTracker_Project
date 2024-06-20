@@ -1,0 +1,173 @@
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('token');
+    const leaderboardBody = document.getElementById('leaderboard-body');
+
+    if (!leaderboardBody) {
+        console.error('Leaderboard body element not found.');
+        return;
+    }
+
+    const appendLeaderboardEntry = (rank, user) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${rank}</td>
+            <td>${user.name}</td>
+            <td>${user.id}</td>
+            <td>Rs. ${user.totalExpense}</td>
+        `;
+        leaderboardBody.appendChild(row);
+    };
+
+    try {
+        const response = await axios.get('http://localhost:4000/premiumFeatures/leaderboard', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const users = response.data;
+        users.forEach((user, index) => {
+            appendLeaderboardEntry(index + 1, user);
+        });
+
+        // Check if the user is a premium user
+        const premiumResponse = await axios.get('http://localhost:4000/user/checkPremium', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (premiumResponse.data.isPremium) {
+            document.querySelector('.premium').innerHTML = '<p>&#x1F451; You are Premium User &#x1F451;</p>';
+            const buyPremiumButton = document.getElementById('rzpbtn1');
+            if (buyPremiumButton) {
+                buyPremiumButton.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching leaderboard data:', error);
+        if (error.response && error.response.status === 401) {
+            console.error('Unauthorized request. Please check your token.');
+        }
+    }
+});
+
+document.querySelector('.leaderBoard').addEventListener('click', async (e) => {
+    try {
+        e.preventDefault();
+        const token = localStorage.getItem('token');
+        await axios.get('http://localhost:4000/premiumFeatures/leaderboard', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Redirect to leaderbrd.html
+        window.location.href = 'leaderbrd.html';
+    } catch (err) {
+        console.log('Error redirecting to leaderbrd.html:', err);
+        if (err.response && err.response.status === 401) {
+            console.error('Unauthorized request. Please check your token.');
+        }
+    }
+});
+
+async function checkPremiumStatus() {
+    const token = localStorage.getItem('token');
+    try {
+        const premiumResponse = await axios.get('http://localhost:4000/user/checkPremium', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (premiumResponse.data.isPremium) {
+            document.querySelector('.premium').innerHTML = '<p>&#x1F451; You are Premium User &#x1F451;</p>';
+            const buyPremiumButton = document.getElementById('rzpbtn1');
+            if (buyPremiumButton) {
+                buyPremiumButton.style.display = 'none';
+            }
+
+            document.getElementById('leaderboardButton').onclick = function() {
+                window.location.href = 'leaderbrd.html';
+            };
+        } else {
+            document.getElementById('leaderboardButton').onclick = function() {
+                alert('You need to be a premium user to access the leaderboard.');
+            };
+        }
+    } catch (error) {
+        console.error('Error fetching premium status:', error);
+        if (error.response && error.response.status === 401) {
+            console.error('Unauthorized request. Please check your token.');
+        }
+    }
+}
+
+checkPremiumStatus();
+
+function redirectToReports() {
+    window.location.href = 'reports.html';
+}
+
+function redirectToAboutUs() {
+    window.location.href = 'about.html';
+}
+
+function redirectToLogout() {
+    window.location.href = 'login.html';
+}-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker Dashboard</title>
+    <link rel="stylesheet" href="dash.css" />
+    <!-- Include your CSS file here -->
+  </head>
+  <body>
+    <nav>
+      <ul>
+        <li><a href="dashboard.html">ExpenseEzz!</a></li>
+        <button class="menuButton" onclick="redirectToReports()">
+          Reports
+        </button>
+        <button class="menuButton" id="leaderboardButton" disabled>Leader Board</button>
+        <button class="menuButton" onclick="redirectToAboutUs()">
+          About us!
+        </button>
+        <button class="menuButton" onclick="redirectToLogout()">Logout</button>
+      </ul>
+    </nav>
+    <div class="container">
+      <h1>Expense Tracker</h1>
+      <div class="premium"></div>
+      <form class="addExpenseForm">
+        <label for="expenseamount">Amount:</label>
+        <input type="number" id="expenseamount" required />
+        <label for="description">Description:</label>
+        <input type="text" id="description" required />
+        <label for="category">Category:</label>
+        <select id="category" required>
+          <option value=""></option>
+          <option value="Fuel">Fuel</option>
+          <option value="Food">Food</option>
+          <option value="Rent">Rent</option>
+          <option value="Other">Other</option>
+          <option value="Clothing">Clothing</option>
+          <option value="Entertainment">Entertainment</option>
+        </select>
+        <button type="submit" id="addExpenseBtn">Add Expense</button>
+      </form>
+      <ul class="expenseList"></ul>
+      <div class="buyPremium">
+        <button id="rzpbtn1">Buy Premium</button>
+      </div>
+        </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="../public/addexpense.js"></script>
+    <script src="../public/premium.js"></script>
+    <script src="../public/leaderboard.js"></script>
+  </body>
+</html>

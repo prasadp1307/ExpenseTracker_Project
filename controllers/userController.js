@@ -12,8 +12,6 @@ const generateToken=(id, name)=>{
     return jwt.sign({userId:id, name: name },process.env.JSW_TOKEN_SECRETKEY);
 }
 
-
-
 // Controller for user Registration
 const signupUser = async (req, res) => {
     try {
@@ -37,7 +35,8 @@ const signupUser = async (req, res) => {
                 await Users.create({
                     name: name,
                     email: email,
-                    password: hash
+                    password: hash,
+                    totalExpense: 0.0 
                 });
                 res.status(201).json({ message: "Successfully created a new user" });
             });

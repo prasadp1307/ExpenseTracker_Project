@@ -27,6 +27,8 @@ const Expense = sequelize.define('expense',
             type:Sequelize.INTEGER,
             primaryKey :true
         }
+    },{
+        timestamps: false
     }
 );
 

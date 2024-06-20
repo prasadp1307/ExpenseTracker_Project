@@ -22,11 +22,11 @@ const Orders = sequelize.define('order',
         status:{
             type: Sequelize.STRING,
             allowNull:false
+        },
+        userId:{
+            type:Sequelize.INTEGER,
+            primaryKey :true
         }
-        // userId:{
-        //     type:Sequelize.INTEGER,
-        //     primaryKey :true
-        // }
     }
 );
 

@@ -28,23 +28,32 @@
     </style>
 </head>
 <body>
+    <script>
+           if(isPremium === "SUCCESSFULL"){
+        document.getElementById='leaderBoard' = 'disaplay'
+    }
+    </script>
     <h1>Leader Board</h1>
-    <button href="dashboard.html">Back to Tracker</button>
+    <a href="./dashboard.html" style="display: inline-block; padding: 10px 20px; background-color: #ebc37e; color: black; text-decoration: none; border: 1px solid #ddd; border-radius: 20px; font-family: cursive;">Back to Tracker</a>
+
     <table class="leaderboard-table">
         <thead>
             <tr>
                 <th>Rank</th>
                 <th>Name</th>
+                <th>Id</th>
                 <th>Total Expense</th>
             </tr>
         </thead>
         <tbody id="leaderboard-body">
-            <!-- Leaderboard entries will be dynamically inserted here -->
+            <!-- Leaderboard entries will be appended here -->
         </tbody>
     </table>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.2/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
     <script src="../public/leaderboard.js"></script>
-</body>
+    <script src="../public/leaderboardopti.js"></script>
+    <script src="../public/premium.js"></script>
+  </body>
 </html>

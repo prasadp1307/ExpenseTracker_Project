@@ -1,70 +1,46 @@
-// // const RazorPay = require('razorpay');
+const Razorpay = require('razorpay');
+const jwt = require('jsonwebtoken');
+const Order = require('../models/orders'); 
+require('dotenv').config();
 
-// // exports.purchasePremium = async (req, res, next) => {
-// //     try {
-// //         const rzp = new RazorPay({
-// //             key_id: process.env.RAZORPAY_KEY_ID,
-// //             key_secret: process.env.RAZORPAY_KEY_SECRET
-// //         });
-// //         const amount = req.header('price');
+exports.purchasePremium = async (req, res, next) => {
+    try {
+        const rzp = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET
+        });
+        const amount = req.header('price');
 
-// //         rzp.orders.create({ amount, currency: "INR" }, async (err, order) => {
-// //             if (err) {
-// //                 console.error(err);
-// //                 return res.status(500).json({ message: "Error in creating order", error: err });
-// //             }
-// //             console.log(1);
+        rzp.orders.create({ amount, currency: 'INR' }, async (err, order) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ message: "Error in creating order", error: err });
+            }
 
-// //             try {
-// //                 await req.user.createOrder({ orderId: order.id, paymentId: 'PENDING', status: 'PENDING' });
-// //                 console.log(order);
-// //                 return res.status(201).json({ order, key_id: rzp.key_id });
-// //             } catch (err) {
-// //                 console.error(err);
-// //                 return res.status(500).json({ message: "Error in creating order record", error: err });
-// //             }
-// //         });
-// //     } catch (err) {
-// //         console.error(err);
-// //         return res.status(500).json({ message: "Server error", error: err });
-// //     }
-// // };
+            try {
+                // Store the userId with the order details in the database
+                await Order.create({ userId: req.user.id, orderId: order.id, paymentId: 'PENDING', status: 'PENDING' });
+                return res.status(201).json({ order, key_id: rzp.key_id });
+            } catch (err) {
+                console.error(err);
+                return res.status(500).json({ message: "Error in creating order record", error: err });
+            }
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Server error", error: err });
+    }
+};
 
-// // const jwt = require('jsonwebtoken');
 
-// // const generateAccessToken = (id, name, isPremium) => {
-// //     return jwt.sign({ userID: id, name: name, isPremium: isPremium }, 'any secret key string');
-// // }
 
-// // exports.updateTransStatus = async (req, res, next) => {
-// //     try {
-// //         // change auth token -> old token + premium
-// //         const token = req.header('Authorization');
-// //         const userDetails = jwt.verify(token, 'any secret key string');
-// //         newToken = generateAccessToken(userDetails.userID, userDetails.name, true);
 
-// //         // update successfull order
-// //         const order_id = req.body.order_id;
 
-// //         const order = await req.user.getOrders({ where: { orderId: order_id } });
-// //         order[0].paymentId = req.body.payment_id;
-// //         order[0].status = 'SUCCESS';
-// //         const updateOrder = await order[0].save();
-
-// //         res.status(201).json({ token: newToken, order: updateOrder });
-// //     }
-// //     catch (err) {
-// //         console.log(err);
-// //     }
-// // }
-
-// const RazorPay = require('razorpay');
-// const jwt = require('jsonwebtoken');
-// const secretKey = process.env.JSW_TOKEN_SECRETKEY;
 
 // const generateAccessToken = (id, name, isPremium) => {
-//     return jwt.sign({ userID: id, name: name, isPremium: isPremium }, secretKey);
-// }
+//     return jwt.sign({ userID: id, name: name, isPremium: isPremium }, process.env.JSW_TOKEN_SECRETKEY);
+// };
+
 // exports.purchasePremium = async (req, res, next) => {
 //     try {
 //         const rzp = new RazorPay({
@@ -80,8 +56,7 @@
 //             }
 
 //             try {
-//                 await req.user.createOrder({ orderId: order.id, paymentId: 'PENDING', status: 'FAILED' });
-//                 console.log(order);
+//                 await Order.create({ userId: req.user.id, orderId: order.id, paymentId: 'PENDING', status: 'PENDING' });
 //                 return res.status(201).json({ order, key_id: rzp.key_id });
 //             } catch (err) {
 //                 console.error(err);
@@ -89,92 +64,106 @@
 //             }
 //         });
 //     } catch (err) {
-//         console.error('Error in purchasePremium:', err);
+//         console.error(err);
 //         return res.status(500).json({ message: "Server error", error: err });
 //     }
 // };
 
-// exports.updateTransStatus = async (req, res, next) => {
-//     try {
-//         const token = req.header('Authorization');
-//         const userDetails = jwt.verify(token, secretKey);
-//         const newToken = generateAccessToken(userDetails.userID, userDetails.name, true);
 
-//         const order_id = req.body.order_id;
-//         const order = await req.user.getOrders({ where: { orderId: order_id } });
+// // const generateAccessToken = (id, name, isPremium) => {
+// //     return jwt.sign({ userID: id, name: name, isPremium: isPremium }, process.env.JSW_TOKEN_SECRETKEY);
+// // };
 
-//         if (!order || order.length === 0) {
-//             return res.status(404).json({ message: "Order not found" });
-//         }
+// // exports.updateTrans = async (req, res, next) => {
+// //     try {
+// //         const token = req.header('Authorization');
+// //         const userDetails = jwt.verify(token, process.env.JSW_TOKEN_SECRETKEY);
+// //         const newToken = generateAccessToken(userDetails.userID, userDetails.name, true);
 
-//         order[0].paymentId = req.body.payment_id;
-//         order[0].status = 'SUCCESS';
-//         const updateOrder = await order[0].save();
+// //         const order_id = req.body.order_id;
+// //         const order = await Order.findOne({ where: { orderId: order_id } });
 
-//         res.status(201).json({ token: newToken, order: updateOrder });
-//     } catch (err) {
-//         console.error('Error in updateTransStatus:', err);
-//         return res.status(500).json({ message: "Server error", error: err });
-//     }
-// }
+// //         if (!order) {
+// //             return res.status(404).json({ message: "Order not found" });
+// //         }
 
-const RazorPay = require('razorpay');
-const jwt = require('jsonwebtoken');
-const secretKey = process.env.JSW_TOKEN_SECRETKEY; 
+// //         order.paymentId = req.body.payment_id;
+// //         order.status = 'SUCCESS';
+// //         const updateOrder = await order.save();
 
-const generateAccessToken = (id, name, isPremium) => {
-    return jwt.sign({ userID: id, name: name, isPremium: isPremium }, secretKey);
-}
+// //         res.status(201).json({ token: newToken, order: updateOrder });
+// //     } catch (err) {
+// //         console.log(err);
+// //         res.status(500).json({ message: "Server error", error: err });
+// //     }
+// // };
 
-exports.purchasePremium = async (req, res, next) => {
-    try {
-        const rzp = new RazorPay({
-            key_id: process.env.RAZORPAY_KEY_ID,
-            key_secret: process.env.RAZORPAY_KEY_SECRET
-        });
-        const amount = req.header('price');
 
-        rzp.orders.create({ amount, currency: "INR" }, async (err, order) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).json({ message: "Error in creating order", error: err });
-            }
+// // // const Razorpay = require('razorpay');
+// // // const jwt = require('jsonwebtoken');
+// // // const Order = require('../models/orders'); 
+// // // require('dotenv').config();
 
-            try {
-                await req.user.createOrder({ orderId: order.id, paymentId: 'PENDING', status: 'PENDING' });
-                console.log(order);
-                return res.status(201).json({ order, key_id: rzp.key_id });
-            } catch (err) {
-                console.error(err);
-                return res.status(500).json({ message: "Error in creating order record", error: err });
-            }
-        });
-    } catch (err) {
-        console.error('Error in purchasePremium:', err);
-        return res.status(500).json({ message: "Server error", error: err });
-    }
-};
+// // // const generateAccessToken = (id, name, isPremium) => {
+// // //     return jwt.sign({ userID: id, name: name, isPremium: isPremium }, process.env.JWT_TOKEN_SECRETKEY);
+// // // };
 
-exports.updateTransStatus = async (req, res, next) => {
-    try {
-        const token = req.header('Authorization');
-        const userDetails = jwt.verify(token, secretKey);
-        const newToken = generateAccessToken(userDetails.userID, userDetails.name, true);
+// // // exports.purchasePremium = async (req, res, next) => {
+// // //     try {
+// // //         const rzp = new Razorpay({
+// // //             key_id: process.env.RAZORPAY_KEY_ID,
+// // //             key_secret: process.env.RAZORPAY_KEY_SECRET
+// // //         });
+// // //         const amount = req.header('price');
 
-        const order_id = req.body.order_id;
-        const order = await req.user.getOrders({ where: { orderId: order_id } });
+// // //         rzp.orders.create({ amount, currency: "INR" }, async (err, order) => {
+// // //             if (err) {
+// // //                 console.error(err);
+// // //                 return res.status(500).json({ message: "Error in creating order", error: err });
+// // //             }
 
-        if (!order || order.length === 0) {
-            return res.status(404).json({ message: "Order not found" });
-        }
+// // //             try {
+// // //                 // Store the userId with the order details in the database
+// // //                 await Order.create({ userId: req.user.id, orderId: order.id, paymentId: 'PENDING', status: 'PENDING' });
+// // //                 return res.status(201).json({ order, key_id: rzp.key_id });
+// // //             } catch (err) {
+// // //                 console.error(err);
+// // //                 return res.status(500).json({ message: "Error in creating order record", error: err });
+// // //             }
+// // //         });
+// // //     } catch (err) {
+// // //         console.error(err);
+// // //         return res.status(500).json({ message: "Server error", error: err });
+// // //     }
+// // // };
 
-        order[0].paymentId = req.body.payment_id;
-        order[0].status = 'SUCCESS';
-        const updateOrder = await order[0].save();
 
-        res.status(201).json({ token: newToken, order: updateOrder });
-    } catch (err) {
-        console.error('Error in updateTransStatus:', err);
-        return res.status(500).json({ message: "Server error", error: err });
-    }
-}
+// // // const generateAccessToken2 = (id, name, isPremium) => {
+// // //     return jwt.sign({ userID: id, name: name, isPremium: isPremium }, process.env.JSW_TOKEN_SECRETKEY);
+// // // };
+
+// // // exports.updateTrans = async (req, res, next) => {
+// // //     try {
+// // //         const token = req.header('Authorization');
+// // //         const userDetails = jwt.verify(token, process.env.JSW_TOKEN_SECRETKEY);
+// // //         const newToken = generateAccessToken2(userDetails.userID, userDetails.name, true);
+
+// // //         const order_id = req.body.order_id;
+// // //         const order = await Order.findOne({ where: { orderId: order_id } });
+
+// // //         if (!order) {
+// // //             return res.status(404).json({ message: "Order not found" });
+// // //         }
+
+// // //         order.paymentId = req.body.payment_id;
+// // //         order.status = 'SUCCESS';
+// // //         await order.save();
+
+// // //         await req.user.update({ isPremium: true });
+
+// // //         res.status(201).json({ token: newToken, order });
+// // //     } catch (err) {
+// // //         console.log(err);
+// // //         res.status(500).json({ message: "Server error", error: err });
+// // //     }
+// // // };
