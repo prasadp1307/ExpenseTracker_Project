@@ -5,9 +5,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!leaderboardBody) {
         console.error('Leaderboard body element not found.');
         return;
-    }
-
-    
+    }    
 
     const appendLeaderboardEntry = (rank, user) => {
         const row = document.createElement('tr');
@@ -48,27 +46,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (error.response && error.response.status === 401) {
             console.error('Unauthorized request. Please check your token.');
         }
-        // leaderboardButton.disabled = false;
-        // leaderboardButton.onclick = function() {
-        // window.location.href = 'leaderbrd.html';
+        
         };
     }
-});
+);
 
-// document.querySelector('.leaderBoard').addEventListener('click', async (e) => {
-//     try {
-//         e.preventDefault();
-//         const token = localStorage.getItem('token');
-//         await axios.get('http://localhost:4000/premiumFeatures/leaderboard', {
-//             headers: { Authorization: `Bearer ${token}` }
-//         });
-
-//         // Redirect to leaderbrd.html
-//         window.location.href = 'leaderbrd.html';
-//     } catch (err) {
-//         console.log('Error redirecting to leaderbrd.html:', err);
-//         if (err.response && err.response.status === 401) {
-//             console.error('Unauthorized request. Please check your token.');
-//         }
-//     }
-// });
